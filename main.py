@@ -26,6 +26,7 @@ def parse_args():
     parser.add_argument('-l', '--list',
                         metavar=('path'))
     parser.add_argument('-s', '--send', action='store_true')
+    parser.add_argument('-r', '--recursive', action='store_true')
 
     args = parser.parse_args()
     return args
@@ -76,7 +77,7 @@ def postprocessing(list, move, send):
         list.write(delimiter.join([str(element) for element in results]))
         list.write('\n')
 
-        if send is not None:
+        if send is True:
             print('Send')
         
         if move is not None:
@@ -99,11 +100,24 @@ def main():
     move = vars(args)['move']
     list = vars(args)['list']
     send = vars(args)['send']
+    recursive = vars(args)['recursive']
     target_path = vars(args)['target']
-    
-    print(move)
 
-    enqueue(target_path)
+    if recursive is True:
+        enqueue(target_path)
+
+    elif os.path.isfile(target_path):
+        proc_queue.put(target_path)
+
+    elif os.path.isdir(target_path):
+        content = os.listdir(target_path)
+
+        for element in content:
+            path = os.path.join(target_path, element)
+
+            if os.path.isfile(path):
+                proc_queue.put(path)
+    
     for t in range(num_threads):
         t = threading.Thread(target=processing, args=(mask,), daemon=True)
         t.start()
