@@ -6,6 +6,7 @@ import threading
 import queue
 import shutil
 import test_detect_meteors as dm
+import test_send_messages as sm
 
 import time
 
@@ -78,7 +79,8 @@ def postprocessing(list, move, send):
         list.write('\n')
 
         if send is True:
-            print('Send')
+            if results[1] is True:
+                sm.upload(results[0])
         
         if move is not None:
             if results[1] is True:
