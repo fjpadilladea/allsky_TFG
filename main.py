@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 from genericpath import isdir, isfile
-from hashlib import new
 import os
 import argparse
 import threading
