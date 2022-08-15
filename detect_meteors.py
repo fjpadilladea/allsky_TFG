@@ -3,6 +3,15 @@ import numpy as np
 import os
 
 def img_processing(img, mask):
+    """
+    Processing of a single image.
+    Arguments:
+    img -- image to be processed
+    mask -- mask used to ignore regions of the input image
+
+    Returns:
+    True or False depending if a possible meteor is detected
+    """
     # Blur image (decrease sensibility)
     blurred = cv.GaussianBlur(img,(17,17),0)
     
@@ -27,7 +36,17 @@ def img_processing(img, mask):
         return False
 
 def detect(file, mask_image):
+    """
+    Processes the input file searching for meteors.
+    img_processing() function is called.
 
+    Arguments:
+    file -- image or video to be processed
+    mask -- mask used to ignore regions of the input image
+
+    Returns:
+    True or False depending if a possible meteor is detected
+    """
     if mask_image is None:
     # If a mask image is not passed as an argument,
     # use a white image as the mask
