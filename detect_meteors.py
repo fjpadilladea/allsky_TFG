@@ -2,6 +2,7 @@ import cv2 as cv
 import numpy as np
 import os
 
+
 def img_processing(img, mask):
     """
     Processing of a single image.
@@ -52,7 +53,7 @@ def detect(file, mask_image):
     # use a white image as the mask
         mask = np.ones((1,1,1),dtype=np.uint8)*255
     else:
-     # Read the mask file
+    # Read the mask file
     # It is necessary to open it as a grayscale image in order to do de bitwise AND operation
     # between the mask and the 'closed' image, which has only one channel
         mask = cv.imread(mask_image, cv.IMREAD_GRAYSCALE)    
@@ -98,7 +99,7 @@ def detect(file, mask_image):
                 width = dimensions[1]
                 resizedMask = cv.resize(mask, (width,height), interpolation = cv.INTER_AREA)
                 
-                detection = img_processing(frame)
+                detection = img_processing(frame, resizedMask)
 
                 # If a meteor is detected, close the video file and return True
                 if detection is True:
@@ -114,3 +115,4 @@ def detect(file, mask_image):
         
         # No meteors were detected: return False
         return False
+
