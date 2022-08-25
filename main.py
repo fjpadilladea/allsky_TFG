@@ -6,8 +6,8 @@ import threading
 import queue
 import shutil
 import csv
-import test_detect_meteors as dm
-import test_send_messages as sm
+import detect_meteors as dm
+import send_messages as sm
 
 proc_queue = queue.Queue()
 postproc_queue = queue.Queue()
