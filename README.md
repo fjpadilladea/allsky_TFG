@@ -43,7 +43,8 @@ los meteoros detectados;
 solo el contenido de este o, si el directorio contiene a su vez más directorios;
 recorrerlos recursivamente y analizar todos los ficheros.
 
-Al pasar la opción -h, se muestra la siguiente ayuda:
+Al pasar la opción -h se muestra la siguiente ayuda:
+
 ![help](./imgs/help.png?raw=true "help")
 
 ### Procesamiento
