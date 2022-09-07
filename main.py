@@ -24,7 +24,8 @@ def parse_args():
                         metavar=('meteors_directory', 'no_meteors_directory'),
                         help='move files to different directories depending on the results')
     parser.add_argument('-l', '--list',
-                        metavar=('path'))
+                        metavar=('path'),
+                        help='path of the txt results file')
     parser.add_argument('-s', '--send', action='store_true',
                         help='upload files with possible meteors to a Slack channel')
     parser.add_argument('-r', '--recursive', action='store_true',
@@ -65,12 +66,15 @@ def processing(mask):
     """
     while True:
         file = proc_queue.get()
-        result = dm.detect(file, mask)
+        print('Processing file: ', file)
+        detection = dm.detect(file, mask)
+        result = detection[0]
+        lines = detection[1]
         # Put the file and the result in the postprocessing queue
-        postproc_queue.put((file, result))
+        postproc_queue.put((file, result, lines))
         proc_queue.task_done()
 
-def write_csv(file, csv_file):
+def write_csv(file, lines, csv_file):
     """Writes rows with the file information in a .csv file"""
     # The path of the files follow the pattern:
     # camXX-location-CA-yyyy-mm-dd-hh-mm-ss/file.jpeg
@@ -111,7 +115,7 @@ def write_csv(file, csv_file):
 
     writer = csv.writer(csv_file)
     # The first element (ID) is left without nothing so it can auto-increment in a database
-    data = ['',file,camera,place,province,year,month,day,hours,minutes,seconds]
+    data = ['',file,camera,place,province,year,month,day,hours,minutes,seconds,' '.join(str(line) for line in lines)]
     writer.writerow(data)
 
 def postprocessing(list, move, send, csv_file):
@@ -122,15 +126,21 @@ def postprocessing(list, move, send, csv_file):
         no_meteors_dir = move[1]
     while True:
         results = postproc_queue.get()
+        print('Postprocessing file: ', results[0])
 
         # Generate the .txt results file        
-        list.write(delimiter.join([str(element) for element in results]))
+        list.write(delimiter.join([str(results[0]), str(results[1])]))
+        list.write(delimiter)
+        if results[2] is not None:
+            list.write(' '.join(str(line) for line in results[2]))
+        else:
+            list.write('None')
         list.write('\n')
 
         # .csv file
         if csv_file is not None:
             if results[1] is True:
-                write_csv(results[0], csv_file)
+                write_csv(results[0], results[2], csv_file)
 
         # Upload files with possible meteors to Slack
         if send is True:
@@ -146,11 +156,12 @@ def postprocessing(list, move, send, csv_file):
                 shutil.move(results[0], no_meteors_dir)
 
         postproc_queue.task_done()
+        print('Completed file: ', results[0])
 
 def main():
     args = parse_args()
-    num_threads_proc = 5
-    num_threads_postproc = 2
+    num_threads_proc = 10
+    num_threads_postproc = 5
 
     # args is a Namespace object
     # vars() is used to manipulate it like a dictionary
@@ -193,7 +204,8 @@ def main():
     if csv_path is not None:
         csv_file = open(csv_path, 'w', newline='') # newline = '' to avoid \n in the file
         writer = csv.writer(csv_file)
-        header = ['ID','file','cam','place','province','year','month','day','hour','minute','second']
+        # lines comes in the format (x1, y1, x2, y2)
+        header = ['ID','file','cam','place','province','year','month','day','hour','minute','second','lines']
         writer.writerow(header)
     else:
         csv_file = None
@@ -213,6 +225,8 @@ def main():
     # Close .csv file
     if csv_path is not None:
         csv_file.close()
+    
+    print('Analysis completed')
 
 if __name__ == '__main__':
     main()

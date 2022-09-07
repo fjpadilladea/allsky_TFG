@@ -32,9 +32,9 @@ def img_processing(img, mask):
     # Lines are considered as possible meteors
     # If a line is found, return True. Otherwise, return False
     if lines is not None:
-        return True
+        return (True, lines) 
     else:
-        return False
+        return (False, lines)
 
 def detect(file, mask_image):
     """
@@ -74,10 +74,8 @@ def detect(file, mask_image):
         
         detection = img_processing(img, resizedMask)
         # If a meteor is detected, return True. Otherwise, return False
-        if detection == True:
-            return True
-        else:
-            return False 
+        # Also return the lines found in the image
+        return detection
     
     # If the file is a video
     elif extension == '.mp4' or extension == '.avi':
@@ -101,10 +99,11 @@ def detect(file, mask_image):
                 
                 detection = img_processing(frame, resizedMask)
 
-                # If a meteor is detected, close the video file and return True
-                if detection is True:
+                # If a meteor is detected, close the video file and return True and
+                # the lines in the image
+                if detection[0] is True:
                     vid.release()
-                    return True
+                    return detection
                 
             # If there are no more frames in the video, break out of the loop
             else:
